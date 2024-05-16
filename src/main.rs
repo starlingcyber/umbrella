@@ -1,3 +1,8 @@
+use clap::Parser;
+
+mod options;
+
 fn main() {
-    println!("Hello, world!");
+    let options = options::Options::parse();
+    println!("{:?}", options);
 }

@@ -4,3 +4,36 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# Async runtime dependencies
+tokio = { version = "1", features = ["full"] }
+tokio-util = { version = "0.7", features = ["full"] }
+tokio-stream = "0.1"
+tonic = { version = "0.10", features = ["tls", "transport", "tls-webpki-roots"] }
+tracing = "0.1"
+tracing-subscriber = "0.2"
+futures = "0.3"
+
+# Other dependencies
+clap = { version = "4", features = ["derive", "env"] }
+color-eyre = "0.6"
+eyre = "0.6"
+itertools = "0.12"
+humantime = "2"
+
+# Penumbra dependencies
+tendermint = { version = "0.34.0", default-features = false }
+penumbra-proto = { git = "https://github.com/penumbra-zone/penumbra", default-features = false, features = ["rpc"]  }
+penumbra-stake = { git = "https://github.com/penumbra-zone/penumbra", default-features = false  }
+penumbra-num = { git = "https://github.com/penumbra-zone/penumbra", default-features = false  }
+penumbra-keys = { git = "https://github.com/penumbra-zone/penumbra", default-features = false  }
+# penumbra-transaction = { git = "https://github.com/penumbra-zone/penumbra", default-features = false }
+# penumbra-asset = { git = "https://github.com/penumbra-zone/penumbra", default-features = false }
+# penumbra-governance = { git = "https://github.com/penumbra-zone/penumbra", default-features = false  }
+# penumbra-community-pool = { git = "https://github.com/penumbra-zone/penumbra", default-features = false }
+# penumbra-distributions = { git = "https://github.com/penumbra-zone/penumbra", default-features = false }
+# penumbra-ibc = { git = "https://github.com/penumbra-zone/penumbra", default-features = false }
+# penumbra-fee = { git = "https://github.com/penumbra-zone/penumbra", default-features = false }
+# penumbra-funding = { git = "https://github.com/penumbra-zone/penumbra", default-features = false }
+# penumbra-sct = { git = "https://github.com/penumbra-zone/penumbra", default-features = false }
+# penumbra-shielded-pool = { git = "https://github.com/penumbra-zone/penumbra", default-features = false }
+# penumbra-compact-block = { git = "https://github.com/penumbra-zone/penumbra", default-features = false  }
