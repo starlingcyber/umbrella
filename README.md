@@ -1,4 +1,4 @@
-# umbrella ☂️
+# Umbrella ☂️
 
 When it rains, it pours! ⛈️ Protect your [Penumbra](https://penumbra.zone) validator from the weather by monitoring its uptime with `umbrella`. ☂️
 
