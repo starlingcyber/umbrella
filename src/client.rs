@@ -1,67 +1,51 @@
+use eyre::Ok;
 use parking_lot::RwLock;
 use penumbra_proto::core::component::stake::v1::query_service_client::QueryServiceClient as StakeQueryServiceClient;
 use std::sync::Arc;
 use tonic::transport::{Channel, Uri};
 
+/// A client for the stake query service, which can be disconnected and reconnected in case of failures.
 #[derive(Debug, Clone)]
 pub struct Client {
-    inner: Arc<RwLock<Node>>,
+    uri: Uri,
+    inner: Arc<RwLock<Option<StakeQueryServiceClient<Channel>>>>,
 }
 
 impl Client {
+    /// Make a new client from a URI.
+    ///
+    /// The client is initially disconnected and must be connected before use.
     pub fn new(uri: Uri) -> Self {
         Self {
-            inner: Arc::new(RwLock::new(Node::Disconnected { uri })),
+            inner: Arc::new(RwLock::new(None)),
+            uri,
         }
     }
 
-    pub fn uri(&self) -> Uri {
-        self.inner.read().uri().clone()
-    }
-
-    pub async fn get(&self) -> eyre::Result<StakeQueryServiceClient<Channel>> {
-        let node = self.inner.read().clone();
-        match node {
-            Node::Connected { client, .. } => Ok(client.clone()),
-            Node::Disconnected { uri } => {
-                let client = StakeQueryServiceClient::connect(uri.clone()).await?;
-                // TODO: This is a race condition which will hit the server with a new connection
-                // for every validator every time the client is diconnected. This is not ideal if
-                // monitoring many validators, but since the normal use case of this tool is to
-                // monitor a single validator, it is acceptable for now. In the future, we should
-                // share the work of reconnecting by having a dedicated task manage the connections.
-                *self.inner.write() = Node::Connected {
-                    client: client.clone(),
-                    uri: uri.clone(),
-                };
-                Ok(client)
-            }
-        }
-    }
-
-    pub async fn disconnect(&self) {
-        let mut node = self.inner.write();
-        *node = Node::Disconnected {
-            uri: node.uri().clone(),
-        };
-    }
-}
-
-#[derive(Debug, Clone)]
-pub enum Node {
-    Connected {
-        client: StakeQueryServiceClient<Channel>,
-        uri: Uri,
-    },
-    Disconnected {
-        uri: Uri,
-    },
-}
-
-impl Node {
+    /// Get the URI of the client.
     pub fn uri(&self) -> &Uri {
-        match self {
-            Self::Connected { uri, .. } | Self::Disconnected { uri } => uri,
+        &self.uri
+    }
+
+    /// Connect the client to the server.
+    pub async fn connect(&self) -> eyre::Result<()> {
+        // If the client is already connected, this is a no-op.
+        if self.inner.read().is_none() {
+            let client = StakeQueryServiceClient::connect(self.uri.clone()).await?;
+            self.inner.write().replace(client);
         }
+        Ok(())
+    }
+
+    /// Disconnect the client from the server.
+    pub fn disconnect(&self) {
+        self.inner.write().take();
+    }
+
+    /// Get the client, if it is connected.
+    ///
+    /// This does not attempt to connect the client if it is disconnected.
+    pub fn get(&self) -> Option<StakeQueryServiceClient<Channel>> {
+        self.inner.read().clone()
     }
 }
