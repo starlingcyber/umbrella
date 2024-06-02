@@ -46,6 +46,6 @@ struct Percent(f64);
 
 impl Display for Percent {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{:.2}%", self.0)
+        write!(f, "{:.2}%", self.0 * 100.0)
     }
 }
