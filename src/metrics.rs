@@ -12,7 +12,7 @@ pub fn metrics(success: bool, info: &[Latest]) {
 
 /// Emit a Prometheus metric indicating whether the last round of updates was successful.
 fn success_info(success: bool) {
-    info!(success, "last update status");
+    info!(success, "update");
 
     // TODO: actually emit Prometheus metrics
 }
@@ -36,7 +36,6 @@ fn validator_info(latest: &Latest) {
         %state,
         uptime = %Percent(uptime_fraction),
         %voting_power,
-        "validator status",
     );
 
     // TODO: actually emit Prometheus metrics
