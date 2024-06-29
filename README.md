@@ -20,13 +20,23 @@ It is not a full-stack monitoring solution for validators. It does not export me
 
 ### Install `umbrella`
 
+#### Build locally
+
 Clone this repository and build `umbrella` with the command:
 
-```
+```shell
 cargo build --release
 ```
 
 This builds the executable `target/release/umbrella`, which you can put somewhere in your `$PATH`.
+
+#### Nix flake
+
+If you are a Nix user, you can add this input to your flake:
+
+```nix
+inputs.umbrella.url = "github:starlingcyber/umbrella";
+```
 
 ### Run `umbrella`
 
