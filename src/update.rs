@@ -1,13 +1,14 @@
 use eyre::Ok;
 use penumbra_proto::core::component::stake::v1::{ValidatorStatusRequest, ValidatorUptimeRequest};
+use std::time::Duration;
 use tokio::{task::JoinSet, time::timeout};
 use tonic::transport::Uri;
 
-use crate::{Client, Latest, POLL_INTERVAL};
+use crate::{Client, Latest};
 
 /// Use all the nodes in each set of nodes to update the info for each validator, treating each set
 /// concurrently, and stopping early if all the info is updated.
-pub async fn update(node_sets: &[Vec<Client>], info: &[Latest]) -> bool {
+pub async fn update(node_sets: &[Vec<Client>], info: &[Latest], connect_timeout: Duration) -> bool {
     // Try to update the info for each validator from all the nodes in each set of nodes, in order:
     let mut stale = info.to_vec();
     let mut failed: Option<Vec<Uri>> = None;
@@ -25,7 +26,7 @@ pub async fn update(node_sets: &[Vec<Client>], info: &[Latest]) -> bool {
         failed = Some(fallback);
 
         // Try to update the info for each validator from all the nodes in the set:
-        stale = update_all_validator_info(&nodes[..], &stale[..]).await;
+        stale = update_all_validator_info(&nodes[..], &stale[..], connect_timeout).await;
         if stale.is_empty() {
             // If all the info was updated, break because we don't need any more information:
             break;
@@ -47,7 +48,11 @@ pub async fn update(node_sets: &[Vec<Client>], info: &[Latest]) -> bool {
 
 /// Concurrently update the info for each validator from each node, returning the list of all
 /// validators which failed to update.
-async fn update_all_validator_info(nodes: &[Client], info: &[Latest]) -> Vec<Latest> {
+async fn update_all_validator_info(
+    nodes: &[Client],
+    info: &[Latest],
+    connect_timeout: Duration,
+) -> Vec<Latest> {
     // Reset the updated flag on each piece of info:
     for latest in info.iter() {
         latest.reset();
@@ -65,7 +70,11 @@ async fn update_all_validator_info(nodes: &[Client], info: &[Latest]) -> Vec<Lat
     let mut tasks = JoinSet::new();
     for client in nodes.iter() {
         for latest in info.iter() {
-            tasks.spawn(update_validator_info(client.clone(), latest.clone()));
+            tasks.spawn(update_validator_info(
+                client.clone(),
+                latest.clone(),
+                connect_timeout,
+            ));
         }
     }
 
@@ -80,7 +89,7 @@ async fn update_all_validator_info(nodes: &[Client], info: &[Latest]) -> Vec<Lat
 }
 
 /// Update the info for a single validator from a single node.
-async fn update_validator_info(client: Client, latest: Latest) {
+async fn update_validator_info(client: Client, latest: Latest, connect_timeout: Duration) {
     // If the client is not connected, don't try to update the info: it's disconnected due to a
     // previous error in this round of updates, and will be reconnected in the next round.
     let Some(stake_client) = client.get() else {
@@ -125,8 +134,8 @@ async fn update_validator_info(client: Client, latest: Latest) {
         Ok(())
     };
 
-    // Set a timeout of five seconds so we don't hang forever waiting for a response:
-    let update = async move { timeout(POLL_INTERVAL, update).await? };
+    // Set a timeout so we don't hang forever waiting for a response:
+    let update = async move { timeout(connect_timeout, update).await? };
 
     // If there was an error in the connection, throw it away and make the next update try to form a
     // new connection, rather than reusing the old, potentially broken one:

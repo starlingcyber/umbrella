@@ -9,6 +9,8 @@ clap = { version = "4", features = ["derive"] }
 eyre = "0.6"
 humantime = "2"
 parking_lot = "0.12"
+metrics = "0.23"
+metrics-prometheus = "0.7"
 prometheus = "0.13"
 tokio = { version = "1", features = ["full"] }
 tonic = { version = "0.10", features = ["tls", "transport", "tls-webpki-roots"] }
