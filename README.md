@@ -16,6 +16,43 @@ Umbrella is a simple tool meant to do one thing well: correctly monitor on-chain
 
 It is not a full-stack monitoring solution for validators. It does not export metrics about the health of individual nodes. It should be used in conjunction with other monitoring solutions to provide a comprehensive picture of a validator operation's wellbeing.
 
-## Use only the resources you need
+## Quick start
 
-Please be nice to public RPC endpoints: if you're connecting to a public RPC, set it as a `--fallback` node so that you only use its resources if your own fullnodes are all unreachable.
+### Install `umbrella`
+
+Clone this repository and build `umbrella` with the command `cargo build --release`. This builds the executable `target/release/umbrella`, which you can put somewhere in your `$PATH`.
+
+### Run `umbrella`
+
+Once you've installed `umbrella`, you can start the metrics server like this:
+
+```shell
+$ umbrella --validator $VALIDATOR_IDENTITY_KEY --node $RPC_ENDPOINT --fallback $FALLBACK_RPC_ENDPOINT
+```
+
+In the above, `$VALIDATOR_IDENTITY_KEY` is the identity key of the validator you wish to monitor, `$RPC_ENDPOINT` is the URI of the RPC endpoint you want to get the information from, and `$FALLBACK_RPC_ENDPOINT` is a fallback RPC which will only be used if no `--node` endpoint is reachable. All of these options can be repeated any number of times to specify multiple validators, multiple fullnodes, and multiple fallbacks, respectively.
+
+**Please be nice to public RPC endpoints:** All nodes specified with `--node` are polled concurrently, and the information from the node with the highest block height is returned to Prometheus. Only if none of them respond, each `--fallback` is tried sequentially in the order specified on the command line. If you're connecting to a public RPC, it's courteous to set it as a `--fallback` node so that you only use its resources if your own fullnodes are all unreachable.
+
+### Scrape metrics using Prometheus
+
+To check if `umbrella` is working, visit `localhost:1984/metrics`, and you should see Prometheus metrics for your selected validator's uptime.
+
+At present, the metrics reported are:
+
+- `state{validator=...}`: gauge per validator measuring the validator's state by numeric label, with the meanings: `0=Defined`, `1=Disabled`, `2=Inactive`, `3=Active`, `4=Jailed`, `5=Tombstoned`
+- `uptime{validator=...}` gauge per validator measuring the validator's uptime as a percentage in the numeric range [0, 100]
+- `consecutive_missed_blocks{validator=...}`: gauge per validator measuring the length in blocks of the most recent string of consecutive downtime (reset to zero every time a block is signed)
+- `update_success`: gauge reading `1` if the most recent update was successful, `0` if data could not be refreshed from any source
+- `update_staleness`: gauge measuring the number of seconds since `umbrella` refreshed its cache of information (reset on every attempted update, regardless of success)
+
+Once you have `umbrella` running (perhaps as a systemd service or some such), you can configure Prometheus to scrape it, and Grafana to display its metrics and set alerts for when they are problematic.
+
+A sensible configuration for monitoring an active validator could be something like:
+
+- P0 critical alert if `state != 3` (validator is not active)
+- P1 high alert if `update_success = 0` for longer than 10 minutes (`umbrella` is not managing to update itself, so you are flying blind)
+- P1 high alert if `consecutive_missed_blocks > 120` (~10 minutes of consecutive downtime means something is wrong and it's not just ephemeral)
+- P1 high alert if `uptime < 95` (cumulative downtime has exceeded ~40 minutes, something is interfering with availability in a significant way)
+- P2 moderate alert if `consecutive_missed_blocks > 6` (6 missed blocks in a row would be unusual for a well-configured functioning validator)
+- P2 moderate alert if `uptime < 99` (normal operating condition should be > 99% uptime, so it might indicate an issue if there's a dip beneath this threshold)
