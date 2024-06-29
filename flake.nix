@@ -95,7 +95,7 @@
             };
           };
 
-          config = mkIf config.services.umbrella.enable {
+          config = with lib; mkIf config.services.umbrella.enable {
             environment.systemPackages = [ umbrella ];
 
             systemd.services.umbrella = {
