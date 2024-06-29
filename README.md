@@ -52,6 +52,8 @@ At present, the metrics reported are:
 - `update_success`: gauge reading `1` if the most recent update was successful, `0` if data could not be refreshed from any source
 - `update_staleness`: gauge measuring the number of seconds since `umbrella` refreshed its cache of information (reset on every attempted update, regardless of success)
 
+### Set up monitoring
+
 Once you have `umbrella` running (perhaps as a systemd service or some such), you can configure Prometheus to scrape it, and Grafana to display its metrics and set alerts for when they are problematic.
 
 A sensible configuration for monitoring an active validator could be something like:
