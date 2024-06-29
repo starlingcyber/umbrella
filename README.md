@@ -56,11 +56,12 @@ At present, the metrics reported are:
 
 Once you have `umbrella` running (perhaps as a systemd service or some such), you can configure Prometheus to scrape it, and Grafana to display its metrics and set alerts for when they are problematic.
 
-A sensible configuration for monitoring an active validator could be something like:
+A possible starting configuration for monitoring an active validator could be something like:
 
-- P0 critical alert if `state != 3` (validator is not active)
-- P1 high alert if `update_success = 0` for longer than 10 minutes (`umbrella` is not managing to update itself, so you are flying blind)
-- P1 high alert if `consecutive_missed_blocks > 120` (~10 minutes of consecutive downtime means something is wrong and it's not just ephemeral)
-- P1 high alert if `uptime < 95` (cumulative downtime has exceeded ~40 minutes, something is interfering with availability in a significant way)
-- P2 moderate alert if `consecutive_missed_blocks > 6` (6 missed blocks in a row would be unusual for a well-configured functioning validator)
-- P2 moderate alert if `uptime < 99` (normal operating condition should be > 99% uptime, so it might indicate an issue if there's a dip beneath this threshold)
+- **P0 critical** alert if `state > 3` (validator has been slashed and is jailed or tombstoned)
+- **P1 high** alert if `state < 3` (validator is not active, but not due to downtime or misbehavior)
+- **P1 high** alert if `update_success = 0` for longer than 10 minutes (`umbrella` is not managing to update itself, so you are flying blind)
+- **P1 high** alert if `consecutive_missed_blocks > 120` (~10 minutes of consecutive downtime means something is wrong and it's not just ephemeral)
+- **P1 high** alert if `uptime < 95` (cumulative downtime has exceeded ~40 minutes, something is interfering with availability in a significant way)
+- **P2 moderate** alert if `consecutive_missed_blocks > 12` (~1 minute of consecutive downtime would be unusual for a well-configured functioning validator)
+- **P2 moderate** alert if `uptime < 99` (normal operating condition should be > 99% uptime, so it might indicate an issue if there's a dip beneath this threshold)
