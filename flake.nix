@@ -55,6 +55,71 @@
         }).overrideAttrs (_: { doCheck = false; }); # Disable tests to improve build times
       });
 
+      # The module
+      nixosModules = {
+        umbrella = { config, lib, pkgs, ... }:
+        let
+          cfg = config.services.umbrella;
+          umbrella = self.outputs.packages.${pkgs.system}.default;
+        in {
+          options = {
+            services.umbrella = with lib; with types; {
+              enable = mkEnableOption "Enable Umbrella service to monitor Penumbra validator nodes";
+              nodes = mkOption {
+                type = listOf str;
+                description = "List of fullnodes to connect to";
+                default = [];
+              };
+              fallbacks = mkOption {
+                type = listOf str;
+                description = "List of fallback RPC endpoints to connect to";
+                default = [];
+              };
+              validators = lib.mkOption {
+                type = listOf str;
+                description = "List of validator identity keys to monitor";
+                default = [];
+              };
+              bind = lib.mkOption {
+                type = nullOr str;
+                description = "Address to bind the /metrics endpoint to, default if unspecified";
+              };
+              pollInterval = mkOption {
+                type = nullOr str;
+                description = "Minimum interval at which the exporter polls the RPC endpoints, default if unspecified";
+              };
+              connectTimeout = mkOption {
+                type = nullOr str;
+                description = "Timeout for connecting to the RPC endpoints, default if unspecified";
+              };
+            };
+          };
+
+          config = mkIf config.services.umbrella.enable {
+            environment.systemPackages = [ umbrella ];
+
+            systemd.services.umbrella = {
+              description = "Umbrella service to monitor Penumbra validator nodes";
+              wantedBy = [ "multi-user.target" ];
+              serviceConfig = {
+                ExecStart = ''
+                  ${umbrella}/bin/umbrella
+                  ${concatStringsSep " " (map (n: "--node ${n}") cfg.nodes)}
+                  ${concatStringsSep " " (map (f: "--fallback ${f}") cfg.fallbacks)}
+                  ${concatStringsSep " " (map (v: "--validator ${v}") cfg.validators)}
+                  ${optionalString (cfg.bind != null) (b: "--bind ${b}")}
+                  ${optionalString (cfg.pollInterval != null) (p: "--poll-interval ${p}")}
+                  ${optionalString (cfg.connectTimeout != null) (c: "--connect-timeout ${c}")}
+                '';
+                Restart = "always";
+                DynamicUser = "yes";
+                RestartSec = "5";
+              };
+            };
+          };
+        };
+      };
+
       # Development environments
       devShells = forEachSupportedSystem ({ pkgs }: {
         default = pkgs.mkShell {
