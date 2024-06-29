@@ -6,10 +6,16 @@ Protect your [Penumbra](https://penumbra.zone) validator from the weather by mon
 
 ## What is Umbrella? 
 
-Umbrella is a [Prometheus](https://prometheus.io/) exporter which monitors on-chain uptime for one or several Penumbra validators. It polls one or more specified Penumbra nodes, picking the data from the node with the highest height, and exports metrics which can be scraped by Prometheus, so that you can set alerts for validator signing downtime.
+Umbrella is a [Prometheus](https://prometheus.io/) exporter which monitors on-chain uptime for one or several Penumbra validators. It connects on-demand to one or more specified Penumbra nodes, picking data from the node with the highest height, and exports Prometheus metrics via HTTP at `/metrics`, so that you can set alerts for validator signing downtime.
+
+In other words, Umbrella is a caching proxy translating Prometheus scraping requests into RPC requests to Penumbra fullnodes, and translating their responses into Prometheus metrics reporting validator uptime.
 
 ## What isn't Umbrella?
 
-Umbrella is merely meant to fill a missing gap in monitoring infrastructure for Penumbra: correctly monitoring on-chain uptime for a node according to the semantics of Penumbra.
+Umbrella is a simple tool meant to do one thing well: correctly monitor on-chain uptime for a node according to the semantics of Penumbra.
 
-It is not a full-stack monitoring solution for validators. It does not export metrics about the health of individual nodes. It should be used in conjunction with other monitoring solutions to provide a comprehensive picture of your validator operation's wellbeing.
+It is not a full-stack monitoring solution for validators. It does not export metrics about the health of individual nodes. It should be used in conjunction with other monitoring solutions to provide a comprehensive picture of a validator operation's wellbeing.
+
+## Use only the resources you need
+
+Please be nice to public RPC endpoints: if you're connecting to a public RPC, set it as a `--fallback` node so that you only use its resources if your own fullnodes are all unreachable.
