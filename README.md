@@ -20,14 +20,20 @@ It is not a full-stack monitoring solution for validators. It does not export me
 
 ### Install `umbrella`
 
-Clone this repository and build `umbrella` with the command `cargo build --release`. This builds the executable `target/release/umbrella`, which you can put somewhere in your `$PATH`.
+Clone this repository and build `umbrella` with the command:
+
+```
+cargo build --release
+```
+
+This builds the executable `target/release/umbrella`, which you can put somewhere in your `$PATH`.
 
 ### Run `umbrella`
 
 Once you've installed `umbrella`, you can start the metrics server like this:
 
 ```shell
-$ umbrella --validator $VALIDATOR_IDENTITY_KEY --node $RPC_ENDPOINT --fallback $FALLBACK_RPC_ENDPOINT
+umbrella --validator $VALIDATOR_IDENTITY_KEY --node $RPC_ENDPOINT --fallback $FALLBACK_RPC_ENDPOINT
 ```
 
 In the above, `$VALIDATOR_IDENTITY_KEY` is the identity key of the validator you wish to monitor, `$RPC_ENDPOINT` is the URI of the RPC endpoint you want to get the information from, and `$FALLBACK_RPC_ENDPOINT` is a fallback RPC which will only be used if no `--node` endpoint is reachable. All of these options can be repeated any number of times to specify multiple validators, multiple fullnodes, and multiple fallbacks, respectively.
