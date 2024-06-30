@@ -28,15 +28,7 @@ Clone this repository and build `umbrella` with the command:
 cargo build --release
 ```
 
-This builds the executable `target/release/umbrella`, which you can put somewhere in your `$PATH`.
-
-#### Nix flake
-
-If you are a Nix user, you can add this input to your flake:
-
-```nix
-inputs.umbrella.url = "github:starlingcyber/umbrella";
-```
+This builds the executable `target/release/umbrella`, which you can then run as you desire. Depending on your deployment, you may consider using a systemd service, Docker container, or something else. For Nix configuration, [see here](#nix-configuration).
 
 ### Run `umbrella`
 
@@ -75,3 +67,57 @@ A possible starting configuration for monitoring an active validator could be so
 - **P1 high** alert if `uptime < 95` (cumulative downtime has exceeded ~40 minutes, something is interfering with availability in a significant way)
 - **P2 moderate** alert if `consecutive_missed_blocks > 12` (~1 minute of consecutive downtime would be unusual for a well-configured functioning validator)
 - **P2 moderate** alert if `uptime < 99` (normal operating condition should be > 99% uptime, so it might indicate an issue if there's a dip beneath this threshold)
+
+## Nix configuration
+
+Umbrella is tested and used on NixOS internally at Starling Cybernetics. If you use Nix, you can borrow from this Nix quickstart:
+
+First, add this input to your flake:
+
+```nix
+inputs.umbrella.url = "github:starlingcyber/umbrella";
+```
+
+Then, you can import the Umbrella module into a NixOS configuration to enable and configure its systemd service:
+
+```nix
+imports = [ umbrella.outputs.nixosModules.default ];
+
+services.umbrella = {
+  enable = true;
+  nodes = [ "https://..." ];
+  fallbacks = [];
+  validators = [ "penumbravalid1..." ];
+};
+```
+
+On the same host, you can then configure a Prometheus scrape configuration for Umbrella:
+
+```nix
+services.prometheus = {
+  enable = true;
+  scrapeConfigs = [
+    {
+      job_name = "umbrella";
+      scrape_interval = "5s";
+      scrape_timeout = "5s";
+      metrics_path = "/metrics";
+      scheme = "http";
+      static_configs = [
+        {
+          targets = [ "localhost:1984" ];
+          labels.instance = "umbrella";
+        }
+      ];
+      relabel_configs = [
+        {
+          source_labels = [ "__address__" ];
+          target_label = "address";
+        }
+      ];
+    }
+  ];
+};
+```
+
+Now Prometheus should be able to see your Umbrella metrics. You can then set up Grafana and configure visualizations and monitoring.
