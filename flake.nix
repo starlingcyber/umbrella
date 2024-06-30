@@ -108,12 +108,12 @@
                 wantedBy = [ "multi-user.target" ];
                 serviceConfig = {
                   ExecStart = ''
-                    ${umbrella}/bin/umbrella
-                    ${concatStringsSep " " (map (n: "--node ${n}") cfg.nodes)}
-                    ${concatStringsSep " " (map (f: "--fallback ${f}") cfg.fallbacks)}
-                    ${concatStringsSep " " (map (v: "--validator ${v}") cfg.validators)}
-                    ${optionalString (cfg.bind != null) (b: "--bind ${b}")}
-                    ${optionalString (cfg.poll != null) (p: "--poll-interval ${p}")}
+                    ${umbrella}/bin/umbrella \
+                    ${concatStringsSep " " (map (n: "--node ${n}") cfg.nodes)} \
+                    ${concatStringsSep " " (map (f: "--fallback ${f}") cfg.fallbacks)} \
+                    ${concatStringsSep " " (map (v: "--validator ${v}") cfg.validators)} \
+                    ${optionalString (cfg.bind != null) (b: "--bind ${b}")} \
+                    ${optionalString (cfg.poll != null) (p: "--poll-interval ${p}")} \
                     ${optionalString (cfg.timeout != null) (c: "--connect-timeout ${c}")}
                   '';
                   Restart = "always";
