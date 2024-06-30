@@ -77,22 +77,25 @@
                   description = "List of fallback RPC endpoints to connect to";
                   default = [];
                 };
-                validators = lib.mkOption {
+                validators = mkOption {
                   type = listOf str;
                   description = "List of validator identity keys to monitor";
                   default = [];
                 };
-                bind = lib.mkOption {
+                bind = mkOption {
                   type = nullOr str;
                   description = "Address to bind the /metrics endpoint to, default if unspecified";
+                  default = null;
                 };
-                pollInterval = mkOption {
+                poll = mkOption {
                   type = nullOr str;
                   description = "Minimum interval at which the exporter polls the RPC endpoints, default if unspecified";
+                  default = null;
                 };
-                connectTimeout = mkOption {
+                timeout = mkOption {
                   type = nullOr str;
                   description = "Timeout for connecting to the RPC endpoints, default if unspecified";
+                  default = null;
                 };
               };
             };
@@ -110,8 +113,8 @@
                     ${concatStringsSep " " (map (f: "--fallback ${f}") cfg.fallbacks)}
                     ${concatStringsSep " " (map (v: "--validator ${v}") cfg.validators)}
                     ${optionalString (cfg.bind != null) (b: "--bind ${b}")}
-                    ${optionalString (cfg.pollInterval != null) (p: "--poll-interval ${p}")}
-                    ${optionalString (cfg.connectTimeout != null) (c: "--connect-timeout ${c}")}
+                    ${optionalString (cfg.poll != null) (p: "--poll-interval ${p}")}
+                    ${optionalString (cfg.timeout != null) (c: "--connect-timeout ${c}")}
                   '';
                   Restart = "always";
                   DynamicUser = "yes";
