@@ -58,9 +58,9 @@ At present, the metrics reported are:
 
 ### Set up monitoring
 
-Once you have `umbrella` running (perhaps as a systemd service or some such), you can configure Prometheus to scrape it, and Grafana to display its metrics and set alerts for when they are problematic.
+Once you have `umbrella` running (perhaps as a systemd service or some such), you can configure Prometheus to scrape it, and Grafana to display its metrics and set alerts for when they are problematic. For a quick start Grafana dashboard, see the [example Grafana dashboard](dashboard.example.json).
 
-A possible starting configuration for monitoring an active validator could be something like:
+A possible starting configuration for alerting on an active validator could be something like:
 
 - **P0 critical** alert if `state > 3` (validator has been slashed and is jailed or tombstoned)
 - **P1 high** alert if `state < 3` (validator is not active, but not due to downtime or misbehavior)
@@ -122,4 +122,4 @@ services.prometheus = {
 };
 ```
 
-Now Prometheus should be able to see your Umbrella metrics. You can then set up Grafana and configure visualizations and monitoring: for a quick start, see the [example Grafana dashboard](dashboard.example.json).
+Now Prometheus should be able to see your Umbrella metrics.
