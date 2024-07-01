@@ -4,6 +4,8 @@ Operating a validator can be stressful: when it rains, it pours! ⛈️
 
 Protect your [Penumbra](https://penumbra.zone) validator from the weather by monitoring its uptime with `umbrella`. ☂️
 
+![Screenshot from 2024-07-01 12-44-11](https://github.com/starlingcyber/umbrella/assets/597089/0ee1c16f-eef2-4254-a4e4-57a9d6cb6279)
+
 ## What is Umbrella? 
 
 Umbrella is a [Prometheus](https://prometheus.io/) exporter which monitors on-chain uptime for one or several Penumbra validators. It connects on-demand to one or more specified Penumbra nodes, picking data from the node with the highest height, and exports Prometheus metrics via HTTP at `/metrics`, so that you can set alerts for validator signing downtime.
