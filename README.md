@@ -120,4 +120,4 @@ services.prometheus = {
 };
 ```
 
-Now Prometheus should be able to see your Umbrella metrics. You can then set up Grafana and configure visualizations and monitoring.
+Now Prometheus should be able to see your Umbrella metrics. You can then set up Grafana and configure visualizations and monitoring: for a quick start, see the [example Grafana dashboard](dashboard.example.json).
