@@ -37,10 +37,10 @@ This builds the executable `target/release/umbrella`, which you can then run as 
 Once you've installed `umbrella`, you can start the metrics server like this:
 
 ```shell
-umbrella --validator $VALIDATOR_IDENTITY_KEY --node $RPC_ENDPOINT --fallback $FALLBACK_RPC_ENDPOINT
+umbrella --validator $VALIDATOR_IDENTITY_KEY --node $PD_GRPC_BIND_ADDRESS --fallback $FALLBACK_PD_GRPC_BIND_ADDRESS
 ```
 
-In the above, `$VALIDATOR_IDENTITY_KEY` is the identity key of the validator you wish to monitor, `$RPC_ENDPOINT` is the URI of the RPC endpoint you want to get the information from, and `$FALLBACK_RPC_ENDPOINT` is a fallback RPC which will only be used if no `--node` endpoint is reachable. All of these options can be repeated any number of times to specify multiple validators, multiple fullnodes, and multiple fallbacks, respectively.
+In the above, `$VALIDATOR_IDENTITY_KEY` is the identity key of the validator you wish to monitor, `$PD_GRPC_BIND_ADDRESS` is the URI of the RPC endpoint you want to get the information from, and `$FALLBACK_PD_GRPC_BIND_ADDRESS` is a fallback RPC which will only be used if no `--node` endpoint is reachable. All of these options can be repeated any number of times to specify multiple validators, multiple fullnodes, and multiple fallbacks, respectively.
 
 **Please be nice to public RPC endpoints:** All nodes specified with `--node` are polled concurrently, and the information from the node with the highest block height is returned to Prometheus. Only if none of them respond, each `--fallback` is tried sequentially in the order specified on the command line. If you're connecting to a public RPC, it's courteous to set it as a `--fallback` node so that you only use its resources if your own fullnodes are all unreachable.
 
